@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    <div class="container">
+        <input type="text" class="prompt" id="prompt" placeholder="Enter image description">
+        <br>
+        <button class="generate-btn" onclick="generateImage()">Generate</button>
+        <br>
+        <img class="generated-img" id="generatedImage" alt="Generated Image will appear here" style="display: none;">
+    </div>
+
+    <script>
+        function generateImage() {
+            const prompt = document.getElementById('prompt').value;
+            
+
+            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=turbo&height=1080&width=1920&nologo=true`;
+
+            // Fetch and display the generated image
+            fetch(url)
+                .then(response => response.blob())
+                .then(imageBlob => {
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    const imgElement = document.getElementById('generatedImage');
+                    imgElement.src = imageUrl;
+                    imgElement.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error fetching image:', error);
+                });
+
+            // Post the prompt to the backend server
+            fetch('https://imaginelabs.pagekite.me:5000/prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error sending POST request:', error);
+            });
+        }
+    </script>
+
+{% endblock %}
